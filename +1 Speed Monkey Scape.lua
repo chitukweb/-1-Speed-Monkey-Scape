@@ -78,6 +78,7 @@ local function showKeySystem(onSuccess)
 		s.Color = color
 		s.Thickness = t or 1.5
 		s.Parent = i
+		return s
 	end
 	
 	local guiParent = coreGui
@@ -682,7 +683,7 @@ local function runMainScript()
 
 	local normalActiveCh2 = false
 	local normalIdCh2 = "AutoWinsCh2_World1"
-	local Ch2NormalPos = Vector3.new(-1664.83, 113.03, -254.92)
+	local Ch2NormalPos = Vector3.new(-3548.34, 112.44, -255.17)
 
 	farmingWinsChapter2Section:Toggle({
 		Title = "WORLD 1 - Normal",
@@ -704,7 +705,7 @@ local function runMainScript()
 
 	local vipActiveCh2 = false
 	local vipIdCh2 = "AutoFarmVipCh2_World1"
-	local Ch2VipPos = Vector3.new(-1685.01, 112.59, -255.47)
+	local Ch2VipPos = Vector3.new(-3566.30, 112.68, -254.38)
 
 	farmingWinsChapter2Section:Toggle({
 		Title = "WORLD 1 - Farm Win VIP",
@@ -822,7 +823,8 @@ local function runMainScript()
 				runLoop("AutoClaimOfflineEarnings", function() return autoClaimOffline end, function()
 					if Remotes:FindFirstChild("ClaimOfflineEarnings") then safeFire(Remotes.ClaimOfflineEarnings) end
 				end, 5)
-			else				stopLoop("AutoClaimOfflineEarnings")
+			else
+				stopLoop("AutoClaimOfflineEarnings")
 			end
 		end
 	})
