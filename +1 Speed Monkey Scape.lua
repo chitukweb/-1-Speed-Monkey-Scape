@@ -16,11 +16,9 @@ local httpService = game:GetService("HttpService")
 
 -- ========== CONFIGURACIÓN DE KEY ==========
 local KEY_FILE = "potent_key.txt"
-local KEY_DURATION = 24 * 60 * 60
-local WEB_URL = "https://potentkwysystem.netlify.app/"
+local KEY_DURATION = 24 * 60 * 60  -- 24 horas en segundos
 local DISCORD_URL = "https://discord.gg/X7Y4NzuC67"
-local KEY_LENGTH = 23
-local KEY_PREFIX = "POTENT"
+local VALID_KEY = "POTENTHUB372635263526"  -- 🔑 KEY FIJA
 
 -- ============================================================
 -- ========== SISTEMA DE KEY ==========
@@ -36,8 +34,11 @@ local function isKeyValidLocally()
 	end
 	local parts = string.split(content, "|")
 	if #parts < 2 then return false end
+	local savedKey = parts[1]
 	local timestamp = tonumber(parts[2])
 	if not timestamp then return false end
+	-- Verifica que la key guardada sea la correcta Y que no haya expirado
+	if savedKey ~= VALID_KEY then return false end
 	return (os.time() - timestamp) < KEY_DURATION
 end
 
@@ -46,33 +47,29 @@ local function saveKey(key)
 	pcall(writefile, KEY_FILE, key .. "|" .. tostring(os.time()))
 end
 
-local function isValidKeyFormat(key)
-	if not key or key == "" then return false end
-	local cleanKey = string.gsub(key, "-", "")
-	if #cleanKey ~= KEY_LENGTH then return false end
-	if string.sub(cleanKey, 1, #KEY_PREFIX) ~= KEY_PREFIX then return false end
-	return true
+local function isValidKey(key)
+	return key == VALID_KEY
 end
 
 local function showKeySystem(onSuccess)
 	local Theme = {
 		Background = Color3.fromRGB(20, 20, 25),
 		Border = Color3.fromRGB(45, 45, 55),
-		Accent = Color3.fromRGB(0, 170, 255),
-		AccentHover = Color3.fromRGB(0, 200, 255),
+		Accent = Color3.fromRGB(88, 101, 242),
+		AccentHover = Color3.fromRGB(114, 137, 218),
 		Text = Color3.fromRGB(240, 240, 245),
 		TextDim = Color3.fromRGB(150, 150, 160),
 		InputBg = Color3.fromRGB(30, 30, 38),
 		Success = Color3.fromRGB(0, 200, 100),
 		Error = Color3.fromRGB(220, 50, 50),
 	}
-	
+
 	local function addCorner(i, r)
 		local c = Instance.new("UICorner")
 		c.CornerRadius = UDim.new(0, r)
 		c.Parent = i
 	end
-	
+
 	local function addStroke(i, color, t)
 		local s = Instance.new("UIStroke")
 		s.Color = color
@@ -80,23 +77,23 @@ local function showKeySystem(onSuccess)
 		s.Parent = i
 		return s
 	end
-	
+
 	local guiParent = coreGui
 	pcall(function()
 		if gethui then guiParent = gethui() end
 	end)
-	
+
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "PotentKeySystem"
 	screenGui.ResetOnSpawn = false
 	screenGui.DisplayOrder = 999
 	screenGui.IgnoreGuiInset = true
-	
+
 	local ok = pcall(function() screenGui.Parent = guiParent end)
 	if not ok then
 		screenGui.Parent = playersService.LocalPlayer:WaitForChild("PlayerGui")
 	end
-	
+
 	local bg = Instance.new("Frame")
 	bg.Size = UDim2.new(1, 0, 1, 0)
 	bg.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -104,22 +101,22 @@ local function showKeySystem(onSuccess)
 	bg.BorderSizePixel = 0
 	bg.ZIndex = 1
 	bg.Parent = screenGui
-	
+
 	local main = Instance.new("Frame")
-	main.Size = UDim2.new(0, 380, 0, 280)
-	main.Position = UDim2.new(0.5, -190, 0.5, -140)
+	main.Size = UDim2.new(0, 380, 0, 260)
+	main.Position = UDim2.new(0.5, -190, 0.5, -130)
 	main.BackgroundColor3 = Theme.Background
 	main.BorderSizePixel = 0
 	main.ZIndex = 2
 	main.Parent = screenGui
 	addCorner(main, 12)
 	addStroke(main, Theme.Border, 1.5)
-	
+
 	main.Size = UDim2.new(0, 0, 0, 0)
 	tweenService:Create(main, TweenInfo.new(0.4, Enum.EasingStyle.Back), {
-		Size = UDim2.new(0, 380, 0, 280)
+		Size = UDim2.new(0, 380, 0, 260)
 	}):Play()
-	
+
 	local title = Instance.new("TextLabel")
 	title.Size = UDim2.new(1, -60, 0, 45)
 	title.Position = UDim2.new(0, 20, 0, 0)
@@ -131,7 +128,7 @@ local function showKeySystem(onSuccess)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.ZIndex = 3
 	title.Parent = main
-	
+
 	local close = Instance.new("TextButton")
 	close.Size = UDim2.new(0, 30, 0, 30)
 	close.Position = UDim2.new(1, -40, 0, 8)
@@ -145,7 +142,7 @@ local function showKeySystem(onSuccess)
 	close.Parent = main
 	addCorner(close, 6)
 	close.MouseButton1Click:Connect(function() screenGui:Destroy() end)
-	
+
 	local divider = Instance.new("Frame")
 	divider.Size = UDim2.new(1, -40, 0, 1)
 	divider.Position = UDim2.new(0, 20, 0, 45)
@@ -153,167 +150,136 @@ local function showKeySystem(onSuccess)
 	divider.BorderSizePixel = 0
 	divider.ZIndex = 3
 	divider.Parent = main
-	
+
 	local sub = Instance.new("TextLabel")
-	sub.Size = UDim2.new(1, -40, 0, 25)
+	sub.Size = UDim2.new(1, -40, 0, 45)
 	sub.Position = UDim2.new(0, 20, 0, 55)
 	sub.BackgroundTransparency = 1
-	sub.Text = "Enter your key to continue"
+	sub.Text = "Join our Discord server to get your FREE key!\nKey expires after 24 hours."
 	sub.TextColor3 = Theme.TextDim
 	sub.Font = Enum.Font.Gotham
 	sub.TextSize = 12
+	sub.TextWrapped = true
 	sub.TextXAlignment = Enum.TextXAlignment.Left
 	sub.ZIndex = 3
 	sub.Parent = main
-	
+
+	local discordBtn = Instance.new("TextButton")
+	discordBtn.Size = UDim2.new(1, -40, 0, 45)
+	discordBtn.Position = UDim2.new(0, 20, 0, 105)
+	discordBtn.BackgroundColor3 = Theme.Accent
+	discordBtn.BorderSizePixel = 0
+	discordBtn.Text = "💬 JOIN DISCORD FOR FREE KEY"
+	discordBtn.TextColor3 = Color3.new(1, 1, 1)
+	discordBtn.Font = Enum.Font.GothamBold
+	discordBtn.TextSize = 13
+	discordBtn.AutoButtonColor = false
+	discordBtn.ZIndex = 3
+	discordBtn.Parent = main
+	addCorner(discordBtn, 8)
+
+	discordBtn.MouseEnter:Connect(function()
+		tweenService:Create(discordBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.AccentHover}):Play()
+	end)
+	discordBtn.MouseLeave:Connect(function()
+		tweenService:Create(discordBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Accent}):Play()
+	end)
+
+	local keyLabel = Instance.new("TextLabel")
+	keyLabel.Size = UDim2.new(1, -40, 0, 20)
+	keyLabel.Position = UDim2.new(0, 20, 0, 160)
+	keyLabel.BackgroundTransparency = 1
+	keyLabel.Text = "Paste your key from Discord below:"
+	keyLabel.TextColor3 = Theme.TextDim
+	keyLabel.Font = Enum.Font.Gotham
+	keyLabel.TextSize = 11
+	keyLabel.TextXAlignment = Enum.TextXAlignment.Left
+	keyLabel.ZIndex = 3
+	keyLabel.Parent = main
+
 	local input = Instance.new("TextBox")
-	input.Size = UDim2.new(1, -40, 0, 40)
-	input.Position = UDim2.new(0, 20, 0, 90)
+	input.Size = UDim2.new(1, -40, 0, 38)
+	input.Position = UDim2.new(0, 20, 0, 180)
 	input.BackgroundColor3 = Theme.InputBg
 	input.BorderSizePixel = 0
 	input.Text = ""
-	input.PlaceholderText = "POTENT-XXXX-XXXX-XXXX"
+	input.PlaceholderText = "POTENTHUB..."
 	input.TextColor3 = Theme.Text
 	input.PlaceholderColor3 = Theme.TextDim
 	input.Font = Enum.Font.Gotham
-	input.TextSize = 13
+	input.TextSize = 12
 	input.ClearTextOnFocus = false
 	input.ZIndex = 3
 	input.Parent = main
 	addCorner(input, 8)
 	local inputStroke = addStroke(input, Theme.Border, 1.5)
-	
+
 	input.Focused:Connect(function()
 		tweenService:Create(inputStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play()
 	end)
 	input.FocusLost:Connect(function()
 		tweenService:Create(inputStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play()
 	end)
-	
-	local verify = Instance.new("TextButton")
-	verify.Size = UDim2.new(1, -40, 0, 42)
-	verify.Position = UDim2.new(0, 20, 0, 145)
-	verify.BackgroundColor3 = Theme.Accent
-	verify.BorderSizePixel = 0
-	verify.Text = "✓ VERIFY KEY"
-	verify.TextColor3 = Color3.new(1, 1, 1)
-	verify.Font = Enum.Font.GothamBold
-	verify.TextSize = 14
-	verify.AutoButtonColor = false
-	verify.ZIndex = 3
-	verify.Parent = main
-	addCorner(verify, 8)
-	
-	verify.MouseEnter:Connect(function()
-		tweenService:Create(verify, TweenInfo.new(0.15), {BackgroundColor3 = Theme.AccentHover}):Play()
-	end)
-	verify.MouseLeave:Connect(function()
-		tweenService:Create(verify, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Accent}):Play()
-	end)
-	
+
 	local status = Instance.new("TextLabel")
 	status.Size = UDim2.new(1, -40, 0, 20)
-	status.Position = UDim2.new(0, 20, 0, 195)
+	status.Position = UDim2.new(0, 20, 0, 222)
 	status.BackgroundTransparency = 1
 	status.Text = ""
 	status.TextColor3 = Theme.Error
 	status.Font = Enum.Font.GothamBold
-	status.TextSize = 12
+	status.TextSize = 11
 	status.ZIndex = 3
 	status.Parent = main
-	
-	local bottom = Instance.new("Frame")
-	bottom.Size = UDim2.new(1, -40, 0, 40)
-	bottom.Position = UDim2.new(0, 20, 1, -55)
-	bottom.BackgroundTransparency = 1
-	bottom.ZIndex = 3
-	bottom.Parent = main
-	
-	local getKeyBtn = Instance.new("TextButton")
-	getKeyBtn.Size = UDim2.new(0.48, 0, 1, 0)
-	getKeyBtn.Position = UDim2.new(0, 0, 0, 0)
-	getKeyBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-	getKeyBtn.Text = "🔑 GET KEY"
-	getKeyBtn.TextColor3 = Theme.Text
-	getKeyBtn.Font = Enum.Font.GothamBold
-	getKeyBtn.TextSize = 12
-	getKeyBtn.AutoButtonColor = false
-	getKeyBtn.ZIndex = 3
-	getKeyBtn.Parent = bottom
-	addCorner(getKeyBtn, 8)
-	
-	local discordBtn = Instance.new("TextButton")
-	discordBtn.Size = UDim2.new(0.48, 0, 1, 0)
-	discordBtn.Position = UDim2.new(0.52, 0, 0, 0)
-	discordBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-	discordBtn.Text = "💬 DISCORD"
-	discordBtn.TextColor3 = Theme.Text
-	discordBtn.Font = Enum.Font.GothamBold
-	discordBtn.TextSize = 12
-	discordBtn.AutoButtonColor = false
-	discordBtn.ZIndex = 3
-	discordBtn.Parent = bottom
-	addCorner(discordBtn, 8)
-	
-	getKeyBtn.MouseButton1Click:Connect(function()
-		if setclipboard then
-			setclipboard(WEB_URL)
-			status.Text = "✅ URL copied to clipboard"
-			status.TextColor3 = Theme.Success
-		end
-		task.delay(3, function()
-			if status and status.Parent then status.Text = "" end
-		end)
-	end)
-	
+
 	discordBtn.MouseButton1Click:Connect(function()
 		if setclipboard then
 			setclipboard(DISCORD_URL)
-			status.Text = "✅ Discord copied to clipboard"
+			status.Text = "✅ Discord link copied! Join and get your key."
+			status.TextColor3 = Theme.Success
+		else
+			status.Text = "⚠️ Copy this link: " .. DISCORD_URL
 			status.TextColor3 = Theme.Success
 		end
-		task.delay(3, function()
-			if status and status.Parent then status.Text = "" end
+		task.delay(5, function()
+			if status and status.Parent then
+				status.Text = ""
+			end
 		end)
 	end)
-	
+
 	local function onVerify()
 		local userKey = input.Text
-		
+
 		if not userKey or userKey == "" then
-			status.Text = "Error: The key is invalid."
+			status.Text = "❌ Please enter a key first!"
 			status.TextColor3 = Theme.Error
 			return
 		end
-		
-		if not isValidKeyFormat(userKey) then
-			status.Text = "Error: The key is invalid."
+
+		if not isValidKey(userKey) then
+			status.Text = "❌ Invalid key! Get one from Discord."
 			status.TextColor3 = Theme.Error
 			return
 		end
-		
-		verify.Text = "⏳ Checking..."
-		verify.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-		status.Text = "Validating..."
+
+		status.Text = "⏳ Validating..."
 		status.TextColor3 = Theme.TextDim
-		
+
 		task.wait(0.8)
-		
-		status.Text = "✅ Key valid"
+
+		status.Text = "✅ Key valid! Loading script..."
 		status.TextColor3 = Theme.Success
-		verify.Text = "✓ GRANTED"
-		verify.BackgroundColor3 = Theme.Success
 		saveKey(userKey)
-		
+
 		task.wait(1)
 		tweenService:Create(main, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 0, 0)}):Play()
 		task.wait(0.35)
 		screenGui:Destroy()
-		
+
 		if onSuccess then onSuccess() end
 	end
-	
-	verify.MouseButton1Click:Connect(onVerify)
+
 	input.FocusLost:Connect(function(enter)
 		if enter then onVerify() end
 	end)
@@ -483,7 +449,7 @@ local function runMainScript()
 
 	local function farmWinsFluid(id, isActive, pos, brickName)
 		if Loops[id] then Loops[id]:Disconnect() Loops[id] = nil end
-		
+
 		local cachedButton = nil
 		local lastButtonSearch = 0
 		local function findButton()
@@ -506,9 +472,9 @@ local function runMainScript()
 			cachedButton = bestPart
 			return bestPart
 		end
-		
+
 		ActiveFarmWins[id] = true
-		
+
 		local time = 0
 		local renderConn
 		renderConn = runService.RenderStepped:Connect(function(dt)
@@ -518,17 +484,17 @@ local function runMainScript()
 				Loops[id] = nil
 				return
 			end
-			
+
 			local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 			if not hrp then return end
-			
+
 			time = time + dt * 15
 			local bounce = math.abs(math.sin(time)) * 6
-			
+
 			hrp.CFrame = CFrame.new(pos + Vector3.new(0, bounce, 0))
 			hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 			hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-			
+
 			local button = findButton()
 			if button then
 				pcall(function()
@@ -537,7 +503,7 @@ local function runMainScript()
 				end)
 			end
 		end)
-		
+
 		Loops[id] = {
 			Disconnect = function()
 				if renderConn then renderConn:Disconnect() end
@@ -565,7 +531,7 @@ local function runMainScript()
 			task.wait(1)
 			local hasActiveFarm = false
 			for _ in pairs(ActiveFarmWins) do hasActiveFarm = true break end
-			
+
 			for _, obj in workspaceService:GetDescendants() do
 				if obj:IsA("SpawnLocation") then
 					if hasActiveFarm then
@@ -989,7 +955,7 @@ local function runMainScript()
 					if not worldShop then return end
 					local worldFolder = worldShop:FindFirstChild("World" .. tostring(Data.World.Value))
 					if not worldFolder then return end
-					
+
 					for i = 1, 3 do
 						local slot = worldFolder:FindFirstChild("Slot" .. i)
 						local bought = worldFolder:FindFirstChild("Bought" .. i)
